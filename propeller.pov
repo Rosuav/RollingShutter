@@ -34,7 +34,7 @@ plane {
 
 //Propeller blade from http://www.f-lohmueller.de/pov_tut/x_sam/tec_851e.htm
 
-#declare Rotation_Angle =  clock * 3;
+#declare Rotation_Angle = clock; //Give full control to the external animation loop
 // ------------------------------------ dimensions of the blades
 #declare Number_of_Blades = 2;
 #declare Blade_Radius  = 3.00; // length of the propeller blades

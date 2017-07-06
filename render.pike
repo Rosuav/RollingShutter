@@ -3,6 +3,7 @@
 constant width = 800, height = 600;
 constant threads = 32;
 constant image_data = allocate(height);
+constant rotation = 300.0; //The prop rotates this many degrees (must be float) during the rendering
 string header;
 
 void renderer(Thread.Queue rows, Thread.Queue results)
@@ -13,7 +14,7 @@ void renderer(Thread.Queue rows, Thread.Queue results)
 		if (undefinedp(y)) break;
 		mapping rc = Process.run(({"povray", "-d", "propeller.pov",
 			"+W"+width, "+H"+height, "+SR"+y, "+ER"+(y+1),
-			"+K"+(100.0*y/height), //Clock runs in percentages
+			"+K" + (rotation * y / height),
 			"+O-", "+FP16",
 		}));
 		if (rc->exitcode) exit(rc->exitcode, rc->stderr);
