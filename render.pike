@@ -16,7 +16,9 @@ void renderer(Thread.Queue rows, Thread.Queue results, int pos)
 		mapping rc = Process.run(({"povray", "-d", "propeller.pov",
 			"+W"+width, "+H"+height, "+SR"+y, "+ER"+(y+1),
 			//This rotates the prop slowly one full turn during animation
-			"+K" + (rotation * y / height + 360.0 / sizeof(animation) * pos),
+			//"+K" + (rotation * y / height + 360.0 / sizeof(animation) * pos),
+			//This adjusts the prop's speed (it'll start stationary and accelerate)
+			"+K" + ((rotation * pos / sizeof(animation)) * y / height),
 			"+O-", "+FP16",
 		}));
 		if (rc->exitcode) exit(rc->exitcode, rc->stderr);
