@@ -1,7 +1,7 @@
 //Render the entire animation, one row at a time
 
-constant width = 400, height = 300;
-constant threads = 4;
+constant width = 800, height = 600;
+constant threads = 32;
 
 void renderer(Thread.Queue rows, Thread.Queue results)
 {
@@ -31,7 +31,7 @@ int main()
 	for (threads_left = 0; threads_left < threads; ++threads_left)
 	{
 		Thread.Thread(renderer, rows, results);
-		sleep(0.1); //Stagger them a bit
+		//sleep(0.1); //Stagger them a bit
 	}
 	int done = 0;
 	while (threads_left)
