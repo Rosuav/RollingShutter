@@ -1,7 +1,7 @@
 Further ideas:
 
 * Animations
-  - Increment a static clock offset
+  - Increment a static clock offset [done]
   - Increase the rotation speed
   - Progressive render
 * Add a full aeroplane to the scene
