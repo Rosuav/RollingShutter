@@ -1,8 +1,8 @@
 //Render the entire animation, one row at a time
 
-constant width = 200, height = 150;
-constant threads = 100;
-constant image_data = allocate(height, "\0" * (width * 3 * 2));
+int width = 200, height = 150; //Default image dimensions (small for fast test renders)
+constant threads = 64; //How do we pick a good thread count? I dunno. For tiny renders, 100 is great; for big ones, 32 seems better.
+array image_data;
 constant rotation = 300.0; //The prop rotates this many degrees (must be float) during the rendering
 string header;
 array animation = ({0});
@@ -109,8 +109,19 @@ int main(int argc, array(string) argv)
 			filename = arg;
 			calculate_clock = f;
 			rm("anim.gif"); symlink(filename + ".gif", "anim.gif");
-			animation = allocate(8); //Frame count
+			animation = allocate(8); //Default frame count (low for fast test renders)
+		}
+		else if (sscanf(arg, "%dx%dx%d", int w, int h, int frm) && frm)
+		{
+			width = w; height = h;
+			animation = allocate(frm);
+		}
+		else if (sscanf(arg, "%dx%d", int w, int h) && w && h)
+		{
+			//Leave the animation frame count at the default (maybe none)
+			width = w; height = h;
 		}
 	}
+	image_data = allocate(height, "\0" * (width * 3 * 2));
 	foreach (animation; int pos;) render_frame(pos);
 }
