@@ -179,7 +179,7 @@ int main(int argc, array(string) argv)
 		}
 		write("[1] %d/%<d - done\n", height);
 		//Duplicate the last frame a few times to create a bit of a pause
-		animation += ({animation[-1]}) * 15;
+		animation += ({animation[-1]}) * 31;
 		write("Stitching into gif...\n");
 		Process.run(({"ffmpeg", "-y", "-f", "image2pipe", "-i", "-", filename + ".gif"}),
 			(["stdin": animation * ""]));
