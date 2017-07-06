@@ -5,7 +5,7 @@ constant threads = 100;
 constant image_data = allocate(height, "\0" * (width * 3 * 2));
 constant rotation = 300.0; //The prop rotates this many degrees (must be float) during the rendering
 string header;
-constant animation = allocate(32);
+constant animation = allocate(32); //Animation frame count
 
 void renderer(Thread.Queue rows, Thread.Queue results, int pos)
 {
