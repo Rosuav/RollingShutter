@@ -1,7 +1,7 @@
 //Render the entire animation, one row at a time
 
 int width = 200, height = 150; //Default image dimensions (small for fast test renders)
-constant threads = 64; //How do we pick a good thread count? I dunno. For tiny renders, 100 is great; for big ones, 32 seems better.
+int threads = 64;
 array image_data;
 constant rotation = 300.0; //The prop rotates this many degrees (must be float) during the rendering
 string header;
@@ -120,6 +120,13 @@ int main(int argc, array(string) argv)
 		{
 			//Leave the animation frame count at the default (maybe none)
 			width = w; height = h;
+		}
+		else if (sscanf(arg, "-j%d", int t) && t)
+		{
+			//Set parallelism. For huge renders, one thread per core is about right;
+			//for small renders, crank it up, and for tiny ones, crank it way up.
+			//For 800x600, -j32 seems good; for 200x150, even -j100.
+			threads = t;
 		}
 	}
 	image_data = allocate(height, "\0" * (width * 3 * 2));
