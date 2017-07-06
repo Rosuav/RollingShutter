@@ -61,12 +61,15 @@ void render_frame(int pos)
 		[int y, object cur] = results->read();
 		if (y == -1) {--threads_left; continue;}
 		write("[%d] %d/%d...\r", pos, ++done, height);
+		#if 0
+		//Don't need partial frame rendering when animating
 		if (lastclock != time(1))
 		{
 			lastclock = time(1);
 			Process.run(({"ffmpeg", "-y", "-i", "-", "prop.png"}),
 				(["stdin": header + image_data * ""]));
 		}
+		#endif
 	}
 	write("[%d] %d/%d - done\n", pos, done, height);
 	animation[pos] = header + image_data * "";
