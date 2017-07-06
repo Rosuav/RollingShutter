@@ -6,11 +6,14 @@ constant image_data = allocate(height, "\0" * (width * 3 * 2));
 constant rotation = 300.0; //The prop rotates this many degrees (must be float) during the rendering
 string header;
 constant animation = allocate(8); //Animation frame count
+string filename = "anim";
 
 //Totates the prop slowly one full turn during animation
 float clock_rotate(int pos, int y) {return rotation * y / height + 360.0 / sizeof(animation) * pos;}
 //Adjusts the prop's speed (it'll start stationary and accelerate)
 float clock_accelerate(int pos, int y) {return (rotation * pos / sizeof(animation)) * y / height;}
+
+function calculate_clock;
 
 void renderer(Thread.Queue rows, Thread.Queue results, int pos)
 {
@@ -20,8 +23,7 @@ void renderer(Thread.Queue rows, Thread.Queue results, int pos)
 		if (undefinedp(y)) break;
 		mapping rc = Process.run(({"povray", "-d", "propeller.pov",
 			"+W"+width, "+H"+height, "+SR"+y, "+ER"+(y+1),
-			//"+K" + clock_rotate(pos, y),
-			"+K" + clock_accelerate(pos, y),
+			"+K" + calculate_clock(pos, y),
 			"+O-", "+FP16",
 		}));
 		if (rc->exitcode) exit(rc->exitcode, rc->stderr);
@@ -76,11 +78,21 @@ void render_frame(int pos)
 	}
 	write("[%d] %d/%d - done\n", pos, done, height);
 	animation[pos] = header + image_data * "";
-	Process.run(({"ffmpeg", "-y", "-f", "image2pipe", "-i", "-", "anim.gif"}),
+	Process.run(({"ffmpeg", "-y", "-f", "image2pipe", "-i", "-", filename + ".gif"}),
 		(["stdin": animation * ""]));
 }
 
-int main()
+int main(int argc, array(string) argv)
 {
+	foreach (argv[1..], string arg)
+	{
+		if (function f = this["clock_" + arg])
+		{
+			//Select an animation function and it also sets the file name.
+			filename = arg;
+			calculate_clock = f;
+			rm("anim.gif"); symlink(filename + ".gif", "anim.gif");
+		}
+	}
 	foreach (animation; int pos;) render_frame(pos);
 }
