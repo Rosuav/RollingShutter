@@ -7,6 +7,11 @@ constant rotation = 300.0; //The prop rotates this many degrees (must be float) 
 string header;
 constant animation = allocate(32); //Animation frame count
 
+//Totates the prop slowly one full turn during animation
+float clock_rotate(int pos, int y) {return rotation * y / height + 360.0 / sizeof(animation) * pos;}
+//Adjusts the prop's speed (it'll start stationary and accelerate)
+float clock_accelerate(int pos, int y) {return (rotation * pos / sizeof(animation)) * y / height;}
+
 void renderer(Thread.Queue rows, Thread.Queue results, int pos)
 {
 	while (1)
@@ -15,10 +20,8 @@ void renderer(Thread.Queue rows, Thread.Queue results, int pos)
 		if (undefinedp(y)) break;
 		mapping rc = Process.run(({"povray", "-d", "propeller.pov",
 			"+W"+width, "+H"+height, "+SR"+y, "+ER"+(y+1),
-			//This rotates the prop slowly one full turn during animation
-			//"+K" + (rotation * y / height + 360.0 / sizeof(animation) * pos),
-			//This adjusts the prop's speed (it'll start stationary and accelerate)
-			"+K" + ((rotation * pos / sizeof(animation)) * y / height),
+			//"+K" + clock_rotate(pos, y),
+			"+K" + clock_accelerate(pos, y),
 			"+O-", "+FP16",
 		}));
 		if (rc->exitcode) exit(rc->exitcode, rc->stderr);
