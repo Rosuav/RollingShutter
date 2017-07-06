@@ -1,0 +1,3 @@
+#!/bin/sh
+# Watch for changes and autobuild
+inotifywait -m -e close_write propeller.pov | while read; do povray -d propeller.pov; done
