@@ -10,8 +10,8 @@ string filename;
 
 //No animation at all. Will render one still frame.
 float _clock_null(int pos, int y) {return rotation * y / height;}
-constant desc_rotate = "Rotate the prop slowly one full turn during animation";
-float clock_rotate(int pos, int y) {return rotation * y / height + 360.0 * pos / sizeof(animation);}
+constant desc_rotate = "Rotate the prop slowly one half turn during animation";
+float clock_rotate(int pos, int y) {return rotation * y / height + 180.0 * pos / sizeof(animation);}
 constant desc_accelerate = "Adjust the prop's speed (it'll start stationary and accelerate)";
 float clock_accelerate(int pos, int y) {return (rotation * pos / sizeof(animation)) * y / height;}
 
