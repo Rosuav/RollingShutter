@@ -3,5 +3,5 @@ Further ideas:
 * Animations
   - Increment a static clock offset [done]
   - Increase the rotation speed [done]
-  - Progressive render
+  - Progressive render [done]
 * Add a full aeroplane to the scene
