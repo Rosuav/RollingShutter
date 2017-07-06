@@ -1,11 +1,11 @@
 //Render the entire animation, one row at a time
 
-constant width = 400, height = 300;
+constant width = 200, height = 150;
 constant threads = 100;
 constant image_data = allocate(height, "\0" * (width * 3 * 2));
 constant rotation = 300.0; //The prop rotates this many degrees (must be float) during the rendering
 string header;
-constant animation = allocate(32); //Animation frame count
+constant animation = allocate(8); //Animation frame count
 
 //Totates the prop slowly one full turn during animation
 float clock_rotate(int pos, int y) {return rotation * y / height + 360.0 / sizeof(animation) * pos;}
