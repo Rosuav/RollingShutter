@@ -9,13 +9,13 @@ array animation = ({0});
 string filename;
 
 //No animation at all. Will render one still frame.
-float clock_null(int pos, int y) {return rotation * y / height;}
-//Rotates the prop slowly one full turn during animation
+float _clock_null(int pos, int y) {return rotation * y / height;}
+constant desc_rotate = "Rotate the prop slowly one full turn during animation";
 float clock_rotate(int pos, int y) {return rotation * y / height + 360.0 / sizeof(animation) * pos;}
-//Adjusts the prop's speed (it'll start stationary and accelerate)
+constant desc_accelerate = "Adjust the prop's speed (it'll start stationary and accelerate)";
 float clock_accelerate(int pos, int y) {return (rotation * pos / sizeof(animation)) * y / height;}
 
-function calculate_clock = clock_null;
+function calculate_clock = _clock_null;
 
 void renderer(Thread.Queue rows, Thread.Queue results, int pos)
 {
@@ -96,6 +96,13 @@ int main(int argc, array(string) argv)
 {
 	foreach (argv[1..], string arg)
 	{
+		if (arg == "list")
+		{
+			write("Available animation functions\n");
+			foreach (sort(indices(this)), string key) if (sscanf(key, "clock_%s", string f))
+				write("%s - %s\n", f, this["desc_" + f]);
+			return 0;
+		}
 		if (function f = this["clock_" + arg])
 		{
 			//Select an animation function and it also sets the file name.
