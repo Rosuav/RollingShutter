@@ -26,7 +26,7 @@ int main()
 	Image.Image result = Image.Image(width, height);
 	Thread.Queue results = Thread.Queue();
 	Thread.Queue rows = Thread.Queue();
-	rows->write(enumerate(height)[*]);
+	rows->write(Array.shuffle(enumerate(height))[*]);
 	int threads_left;
 	for (threads_left = 0; threads_left < threads; ++threads_left)
 	{
