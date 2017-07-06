@@ -18,7 +18,16 @@ float clock_accelerate(int pos, int y) {return (rotation * pos / sizeof(animatio
 
 function calculate_clock = _clock_null;
 
-string dim(string data, float factor) {return data;} //TODO
+//Take a string of PPM data (assumed 16-bit - TODO: support 8-bit too) and
+//dim it by multiplying every value by the given factor.
+string dim(string data, float factor)
+{
+	sscanf(data, "%{%2c%}", array values);
+	values = values * ({ }); //Flatten out sscanf's layering
+	if (factor == 0.5) values = values[*] / 2; //Fast path for halving
+	else values = values[*] * factor; //Do the dimming
+	return sprintf("%@2c", (array(int))values); //And turn it back into a string. fxnUp
+}
 
 void renderer(Thread.Queue rows, Thread.Queue results, int pos)
 {
@@ -103,6 +112,7 @@ int main(int argc, array(string) argv)
 		if (arg == "list")
 		{
 			write("Available animation functions\n");
+			write("progressive - Demonstrate the effect via a progressive render of one frame\n");
 			foreach (sort(indices(this)), string key) if (sscanf(key, "clock_%s", string f))
 				write("%s - %s\n", f, this["desc_" + f]);
 			return 0;
@@ -148,24 +158,31 @@ int main(int argc, array(string) argv)
 	if (progressive)
 	{
 		//Render each frame as:
-		//1) Lines up to the current one at 0.75 brightness
+		//1) Lines up to the current one at 0.75 brightness (maybe)
 		//2) The current line at 1.0 brightness
 		//3) The rest of the image from the current image's data, at 0.5 brightness
 		//Note that the internal animation loop is not used in this mode.
 		animation = allocate(height);
 		for (int frm = 0; frm < height; ++frm)
 		{
+			write("[1] %d/%d...\r", frm, height);
 			array frame = allocate(height);
 			//Lines "in the past"
 			for (int y = 0; y < frm; ++y)
-				frame[y] = dim(image_data[y], 0.75);
+				//frame[y] = dim(image_data[y], 0.75); //Dim the past
+				frame[y] = image_data[y]; //Keep past fully bright
 			//Current line
 			frame[frm] = image_data[frm];
 			for (int y = frm + 1; y < height; ++y)
 				frame[y] = dim(progressive[frm][y], 0.5);
 			animation[frm] = header + frame * "";
 		}
+		write("[1] %d/%<d - done\n", height);
+		//Duplicate the last frame a few times to create a bit of a pause
+		animation += ({animation[-1]}) * 15;
+		write("Stitching into gif...\n");
 		Process.run(({"ffmpeg", "-y", "-f", "image2pipe", "-i", "-", filename + ".gif"}),
 			(["stdin": animation * ""]));
+		write("Render complete.\n");
 	}
 }
