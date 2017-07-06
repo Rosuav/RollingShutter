@@ -6,6 +6,7 @@ array image_data;
 constant rotation = 300.0; //The prop rotates this many degrees (must be float) during the rendering
 string header;
 array animation = ({0});
+array progressive; //Only allocated in progressive mode
 string filename;
 
 //No animation at all. Will render one still frame.
@@ -17,6 +18,8 @@ float clock_accelerate(int pos, int y) {return (rotation * pos / sizeof(animatio
 
 function calculate_clock = _clock_null;
 
+string dim(string data, float factor) {return data;} //TODO
+
 void renderer(Thread.Queue rows, Thread.Queue results, int pos)
 {
 	while (1)
@@ -24,7 +27,7 @@ void renderer(Thread.Queue rows, Thread.Queue results, int pos)
 		int y = rows->try_read();
 		if (undefinedp(y)) break;
 		mapping rc = Process.run(({"povray", "-d", "propeller.pov",
-			"+W"+width, "+H"+height, "+SR"+y, "+ER"+(y+1),
+			"+W"+width, "+H"+height, "+SR"+y, progressive ? "" : "+ER"+(y+1),
 			"+K" + calculate_clock(pos, y),
 			"+O-", "+FP16",
 		}));
@@ -45,6 +48,7 @@ void renderer(Thread.Queue rows, Thread.Queue results, int pos)
 		if (info[2] > 255) line_bytes *= 2;
 		array lines = ppm / line_bytes;
 		image_data[y] = lines[y];
+		if (progressive) progressive[y] = lines;
 		results->write(({y, this_thread()}));
 	}
 	results->write(({-1, this_thread()}));
@@ -103,7 +107,13 @@ int main(int argc, array(string) argv)
 				write("%s - %s\n", f, this["desc_" + f]);
 			return 0;
 		}
-		if (function f = this["clock_" + arg])
+		if (arg == "progressive")
+		{
+			//Animate the progressive renderer
+			filename = arg; //And the devicatMAGIC happens
+			rm("anim.gif"); symlink(filename + ".gif", "anim.gif");
+		}
+		else if (function f = this["clock_" + arg])
 		{
 			//Select an animation function and it also sets the file name.
 			filename = arg;
@@ -130,5 +140,32 @@ int main(int argc, array(string) argv)
 		}
 	}
 	image_data = allocate(height, "\0" * (width * 3 * 2));
+	if (filename == "progressive")
+	{
+		progressive = allocate(height);
+	}
 	foreach (animation; int pos;) render_frame(pos);
+	if (progressive)
+	{
+		//Render each frame as:
+		//1) Lines up to the current one at 0.75 brightness
+		//2) The current line at 1.0 brightness
+		//3) The rest of the image from the current image's data, at 0.5 brightness
+		//Note that the internal animation loop is not used in this mode.
+		animation = allocate(height);
+		for (int frm = 0; frm < height; ++frm)
+		{
+			array frame = allocate(height);
+			//Lines "in the past"
+			for (int y = 0; y < frm; ++y)
+				frame[y] = dim(image_data[y], 0.75);
+			//Current line
+			frame[frm] = image_data[frm];
+			for (int y = frm + 1; y < height; ++y)
+				frame[y] = dim(progressive[frm][y], 0.5);
+			animation[frm] = header + frame * "";
+		}
+		Process.run(({"ffmpeg", "-y", "-f", "image2pipe", "-i", "-", filename + ".gif"}),
+			(["stdin": animation * ""]));
+	}
 }
