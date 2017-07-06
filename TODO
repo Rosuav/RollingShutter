@@ -4,5 +4,4 @@ Further ideas:
   - Increment a static clock offset
   - Increase the rotation speed
   - Progressive render
-* Use PNM instead of PNG and avoid cutting to eight-bit colour
 * Add a full aeroplane to the scene
