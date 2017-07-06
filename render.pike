@@ -16,7 +16,7 @@ void renderer(Thread.Queue rows, Thread.Queue results)
 		}));
 		if (rc->exitcode) exit(rc->exitcode, rc->stderr);
 		Image.Image cur = Image.PNG.decode(rc->stdout);
-		results->write(({y, cur->copy(0, y, width, y+1)}));
+		results->write(({y, cur->copy(0, y, width, y)}));
 	}
 	results->write(({-1, this_thread()}));
 }
