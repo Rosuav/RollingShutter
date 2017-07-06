@@ -34,16 +34,13 @@ int main()
 		sleep(0.1); //Stagger them a bit
 	}
 	int done = 0;
-	multiset(int) seen=(<>);
 	while (threads_left)
 	{
 		[int y, Image.Image cur] = results->read();
 		if (y == -1) {--threads_left; continue;}
-		if (seen[y]) write("ERROR: DUPLICATE [%d]\n", y);
-		seen[y] = 1;
 		result->paste(cur, 0, y);
 		Stdio.write_file("prop.png", Image.PNG.encode(result));
 		write("%d/%d...\r", ++done, height);
 	}
-	write("%d/%d - done (%d)\n", done, height, sizeof(seen));
+	write("%d/%d - done\n", done, height);
 }
