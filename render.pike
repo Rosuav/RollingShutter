@@ -2,7 +2,7 @@
 
 constant width = 800, height = 600;
 constant threads = 32;
-constant image_data = allocate(height);
+constant image_data = allocate(height, "\0" * (width * 3 * 2));
 constant rotation = 300.0; //The prop rotates this many degrees (must be float) during the rendering
 string header;
 
@@ -51,13 +51,20 @@ int main()
 		//sleep(0.1); //Stagger them a bit
 	}
 	int done = 0;
+	int lastclock = 0;
 	while (threads_left)
 	{
 		[int y, object cur] = results->read();
 		if (y == -1) {--threads_left; continue;}
 		write("%d/%d...\r", ++done, height);
+		if (lastclock != time(1))
+		{
+			lastclock = time(1);
+			Process.run(({"ffmpeg", "-y", "-i", "-", "prop.png"}),
+				(["stdin": header + image_data * ""]));
+		}
 	}
 	write("%d/%d - done\n", done, height);
-	string ppm = header + image_data * "";
-	Process.run(({"ffmpeg", "-i", "-", "prop.png"}), (["stdin": ppm]));
+	Process.run(({"ffmpeg", "-y", "-i", "-", "prop.png"}),
+		(["stdin": header + image_data * ""]));
 }
