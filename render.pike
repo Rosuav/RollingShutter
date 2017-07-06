@@ -109,7 +109,7 @@ int main(int argc, array(string) argv)
 			filename = arg;
 			calculate_clock = f;
 			rm("anim.gif"); symlink(filename + ".gif", "anim.gif");
-			animation = allocate(8); //Default frame count (low for fast test renders)
+			animation = animation || allocate(8); //Default frame count (low for fast test renders)
 		}
 		else if (sscanf(arg, "%dx%dx%d", int w, int h, int frm) && frm)
 		{
