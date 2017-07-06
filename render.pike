@@ -162,7 +162,7 @@ int main(int argc, array(string) argv)
 		//2) The current line at 1.0 brightness
 		//3) The rest of the image from the current image's data, at 0.5 brightness
 		//Note that the internal animation loop is not used in this mode.
-		animation = allocate(height);
+		animation = progressive;
 		for (int frm = 0; frm < height; ++frm)
 		{
 			write("[1] %d/%d...\r", frm, height);
@@ -175,7 +175,7 @@ int main(int argc, array(string) argv)
 			frame[frm] = image_data[frm];
 			for (int y = frm + 1; y < height; ++y)
 				frame[y] = dim(progressive[frm][y], 0.5);
-			animation[frm] = header + frame * "";
+			progressive[frm] = header + frame * "";
 		}
 		write("[1] %d/%<d - done\n", height);
 		//Duplicate the last frame a few times to create a bit of a pause
