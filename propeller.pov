@@ -13,6 +13,7 @@ camera {
 
 light_source { <0.0, 40.0, -30.0> colour White }
 
+//floor
 plane {
 	y, -8
 	texture {pigment {
@@ -20,4 +21,10 @@ plane {
 		colour <0.0, 0.8, 1.0>
 		scale 5
 	} }
+}
+
+//backdrop
+plane {
+	z, 50
+	texture {pigment {colour <0.7, 1.0, 0.7>} }
 }
