@@ -1,4 +1,4 @@
 #!/bin/bash
 # Watch for changes and autobuild
 # To animate, add +kff100 +kc
-inotifywait -m -e close_write propeller.pov | while read; do povray -d propeller.pov; done
+inotifywait -m -e close_write propeller.pov | while read; do povray -d propeller.pov && cat <propeller.png >prop.png; done
