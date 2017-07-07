@@ -163,20 +163,21 @@ int main(int argc, array(string) argv)
 		//3) The rest of the image from the current image's data, at 0.5 brightness
 		//Note that the internal animation loop is not used in this mode.
 		animation = progressive;
+		string past = ""; //Lines "in the past". Gets the current row added _after_ rendering.
 		for (int frm = 0; frm < height; ++frm)
 		{
 			write("[1] %d/%d...\r", frm, height);
-			array frame = allocate(height);
-			//Lines "in the past"
-			for (int y = 0; y < frm; ++y)
-				//frame[y] = dim(image_data[y], 0.75); //Dim the past
-				frame[y] = image_data[y]; //Keep past fully bright
-			//Current line
-			frame[frm] = image_data[frm];
-			//Lines in the future
-			for (int y = frm + 1; y < height; ++y)
-				frame[y] = dim(progressive[frm][y], 0.5);
-			progressive[frm] = header + frame * "";
+			array frame = ({
+				header,
+				//Lines in the past
+				past,
+				//Current line
+				image_data[frm],
+				//Lines in the future
+			}) +	dim(progressive[frm][frm + 1..][*], 0.5);
+			animation[frm] = frame * "";
+			//past += dim(image_data[frm], 0.75); //Dim the past
+			past += image_data[frm]; //Keep past fully bright
 		}
 		write("[1] %d/%<d - done\n", height);
 		//Duplicate the last frame a few times to create a bit of a pause
