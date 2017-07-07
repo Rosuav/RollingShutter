@@ -173,6 +173,7 @@ int main(int argc, array(string) argv)
 				frame[y] = image_data[y]; //Keep past fully bright
 			//Current line
 			frame[frm] = image_data[frm];
+			//Lines in the future
 			for (int y = frm + 1; y < height; ++y)
 				frame[y] = dim(progressive[frm][y], 0.5);
 			progressive[frm] = header + frame * "";
