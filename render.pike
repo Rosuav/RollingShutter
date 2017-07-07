@@ -181,7 +181,9 @@ int main(int argc, array(string) argv)
 		write("[1] %d/%<d - done\n", height);
 		//Duplicate the last frame a few times to create a bit of a pause
 		animation += ({animation[-1]}) * 31;
-		write("Stitching into gif...\n");
+		write("Stitching into gif [%d frames, %d b/f, total %s]...\n",
+			sizeof(animation), sizeof(animation[0]),
+			String.int2size(`+(@sizeof(animation[*]))));
 		Process.run(({"ffmpeg", "-y", "-f", "image2pipe", "-i", "-", filename + ".gif"}),
 			(["stdin": animation * ""]));
 		write("Render complete.\n");
