@@ -199,7 +199,7 @@ int main(int argc, array(string) argv)
 		write("Stitching into gif [%d frames, %d b/f, total %s]...\n",
 			sizeof(animation), sizeof(animation[0]),
 			String.int2size(`+(@sizeof(animation[*]))));
-		//TODO: Shuffle the array, rather than joining it all up
+		//TODO: Shuffle the array into stdin, rather than joining it all up first
 		Process.run(({"ffmpeg", "-y", "-f", "image2pipe", "-i", "-", filename + ".gif"}),
 			(["stdin": animation * ""]));
 		write("Render complete.\n");
