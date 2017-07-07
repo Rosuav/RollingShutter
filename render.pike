@@ -148,6 +148,14 @@ int main(int argc, array(string) argv)
 			//For 800x600, -j32 seems good; for 200x150, even -j100.
 			threads = t;
 		}
+		else if (arg == "grind")
+		{
+			string data = random_string(7200);
+			write("Generated %d bytes of random data\n", sizeof(data));
+			float tm = gauge {for (int i=0; i<10000; ++i) dim(data, 0.5);};
+			write("Dimmed in %fs\n", tm);
+			return 0;
+		}
 	}
 	image_data = allocate(height, "\0" * (width * 3 * 2));
 	if (filename == "progressive")
