@@ -9,6 +9,8 @@ array animation = ({0});
 array progressive; //Only allocated in progressive mode
 string filename;
 
+int started = time();
+
 //No animation at all. Will render one still frame.
 float _clock_null(int pos, int y) {return rotation * y / height;}
 constant desc_rotate = "Rotate the prop slowly one half turn during animation";
@@ -65,6 +67,7 @@ void renderer(Thread.Queue rows, Thread.Queue results, int pos)
 
 void render_frame(int pos)
 {
+	int frametime = time();
 	Thread.Queue results = Thread.Queue();
 	Thread.Queue rows = Thread.Queue();
 	rows->write(Array.shuffle(enumerate(height))[*]);
@@ -92,7 +95,9 @@ void render_frame(int pos)
 			}
 		}
 	}
-	write("[%d] %d/%d - done\n", pos, done, height);
+	int finish = time() + (time() - started) * (sizeof(animation) - pos - 1) / (pos + 1);
+	write("[%d] %d/%d - done in %ds, est finish %s", pos, done, height,
+		time() - frametime, ctime(finish));
 	if (!filename)
 	{
 		//Render a single frame as a PNG. No animation.
