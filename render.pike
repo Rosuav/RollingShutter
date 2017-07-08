@@ -171,6 +171,13 @@ int main(int argc, array(string) argv)
 		//3) The rest of the image from the current image's data, at 0.5 brightness
 		//Note that the internal animation loop is not used in this mode.
 
+		Stdio.File ffmpeg = Stdio.File();
+		Process.Process proc = Process.Process(
+			({"ffmpeg", "-y", "-f", "image2pipe", "-i", "-", filename + ".gif"}),
+			([/*"stdout": Stdio.File("/dev/null")->pipe(),
+			"stderr": Stdio.File("/dev/null")->pipe(),*/
+			"stdin": ffmpeg->pipe(Stdio.PROP_IPC|Stdio.PROP_REVERSE)])
+		);
 		//animation = allocate(height);
 		//Since the intermediate 'progressive' array won't be needed after this, we
 		//reuse it for the output frames. This effectively means that we discard the
@@ -178,10 +185,11 @@ int main(int argc, array(string) argv)
 		//memory usage notably: 2213416 with reuse, 2855796 w/o.
 		animation = progressive;
 		string past = ""; //Lines "in the past". Gets the current row added _after_ rendering.
+		array frame;
 		for (int frm = 0; frm < height; ++frm)
 		{
 			write("[1] %d/%d...\r", frm, height);
-			array frame = ({
+			frame = ({
 				header,
 				//Lines in the past
 				past,
@@ -189,19 +197,16 @@ int main(int argc, array(string) argv)
 				image_data[frm],
 				//Lines in the future
 			}) +	dim(progressive[frm][frm + 1..][*], 0.5);
-			animation[frm] = frame * "";
+			progressive[frm] = 0; //Discard data we don't need any more
+			ffmpeg->write(frame * "");
 			//past += dim(image_data[frm], 0.75); //Dim the past
 			past += image_data[frm]; //Keep past fully bright
 		}
 		write("[1] %d/%<d - done\n", height);
 		//Duplicate the last frame a few times to create a bit of a pause
-		animation += ({animation[-1]}) * 31;
-		write("Stitching into gif [%d frames, %d b/f, total %s]...\n",
-			sizeof(animation), sizeof(animation[0]),
-			String.int2size(`+(@sizeof(animation[*]))));
-		//TODO: Shuffle the array into stdin, rather than joining it all up first
-		Process.run(({"ffmpeg", "-y", "-f", "image2pipe", "-i", "-", filename + ".gif"}),
-			(["stdin": animation * ""]));
+		ffmpeg->write(frame * "" * 31);
+		ffmpeg->close();
+		proc->wait();
 		write("Render complete.\n");
 	}
 }
