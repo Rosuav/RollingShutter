@@ -31,17 +31,19 @@ string dim(string data, float factor)
 	return sprintf("%@2c", (array(int))values); //And turn it back into a string. fxnUp
 }
 
+mapping cheat;
 void renderer(Thread.Queue rows, Thread.Queue results, int pos)
 {
 	while (1)
 	{
 		int y = rows->try_read();
 		if (undefinedp(y)) break;
-		mapping rc = Process.run(({"povray", "-d", "propeller.pov",
+		mapping rc = cheat || Process.run(({"povray", "-d", "propeller.pov",
 			"+W"+width, "+H"+height, "+SR"+y, progressive ? "" : "+ER"+(y+1),
 			"+K" + calculate_clock(pos, y),
 			"+O-", "+FP16",
 		}));
+		//cheat = rc; //Uncomment to nerf the actual rendering and use the same frame for everything
 		if (rc->exitcode) exit(rc->exitcode, rc->stderr);
 		//Decode PPM data from rc->stdout
 		sscanf(rc->stdout, "P6%s", string ppm);
