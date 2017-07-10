@@ -20,15 +20,24 @@ float clock_accelerate(int pos, int y) {return (rotation * pos / sizeof(animatio
 
 function calculate_clock = _clock_null;
 
-//Take a string of PPM data (assumed 16-bit - TODO: support 8-bit too) and
-//dim it by multiplying every value by the given factor.
-string dim(string data, float factor)
+//Take a string of 16-bit PPM data and dim it
+//by multiplying every value by the given factor.
+string dim16(string data, float factor)
 {
 	sscanf(data, "%{%2c%}", array values);
 	values = values * ({ }); //Flatten out sscanf's layering
 	if (factor == 0.5) values = values[*] / 2; //Fast path for halving
 	else values = values[*] * factor; //Do the dimming
 	return sprintf("%@2c", (array(int))values); //And turn it back into a string. fxnUp
+}
+
+//As above but assumes 8-bit data. Significantly faster.
+string dim(string data, float factor)
+{
+	array values = (array(int))data;
+	if (factor == 0.5) values = values[*] / 2; //Fast path for halving
+	else values = values[*] * factor; //Do the dimming
+	return (string)(array(int))values; //And turn it back into a string. fxnUp
 }
 
 mapping cheat;
@@ -41,7 +50,7 @@ void renderer(Thread.Queue rows, Thread.Queue results, int pos)
 		mapping rc = cheat || Process.run(({"povray", "-d", "propeller.pov",
 			"+W"+width, "+H"+height, "+SR"+y, progressive ? "" : "+ER"+(y+1),
 			"+K" + calculate_clock(pos, y),
-			"+O-", "+FP16",
+			"+O-", "+FP8",
 		}));
 		//cheat = rc; //Uncomment to nerf the actual rendering and use the same frame for everything
 		if (rc->exitcode) exit(rc->exitcode, rc->stderr);
@@ -178,8 +187,14 @@ int main(int argc, array(string) argv)
 		{
 			string data = random_string(7200);
 			write("Generated %d bytes of random data\n", sizeof(data));
-			float tm = gauge {for (int i=0; i<10000; ++i) dim(data, 0.5);};
-			write("Dimmed in %fs\n", tm);
+			float tm = gauge {for (int i=0; i<10000; ++i) dim16(data, 0.5);};
+			write("Halved 16-bit in %fs\n", tm);
+			tm = gauge {for (int i=0; i<10000; ++i) dim(data, 0.5);};
+			write("Halved 8-bit in %fs\n", tm);
+			tm = gauge {for (int i=0; i<10000; ++i) dim16(data, 0.75);};
+			write("Dimmed 16-bit in %fs\n", tm);
+			tm = gauge {for (int i=0; i<10000; ++i) dim(data, 0.75);};
+			write("Dimmed 8-bit in %fs\n", tm);
 			return 0;
 		}
 	}
