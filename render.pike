@@ -67,6 +67,21 @@ void renderer(Thread.Queue rows, Thread.Queue results, int pos)
 	results->write(({-1, this_thread()}));
 }
 
+Thread.Thread preview_thread;
+void make_preview(array(string) animation)
+{
+	Stdio.File ffmpeg = Stdio.File();
+	Process.Process proc = Process.Process(
+		({"ffmpeg", "-y", "-f", "image2pipe", "-i", "-", filename + ".gif"}),
+		(["stdout": Stdio.File("/dev/null")->pipe(),
+		"stderr": Stdio.File("/dev/null")->pipe(),
+		"stdin": ffmpeg->pipe(Stdio.PROP_IPC|Stdio.PROP_REVERSE)])
+	);
+	ffmpeg->write(animation[*]);
+	ffmpeg->close();
+	proc->wait();
+}
+
 void render_frame(int pos)
 {
 	int frametime = time();
@@ -108,8 +123,11 @@ void render_frame(int pos)
 		return;
 	}
 	animation[pos] = header + image_data * "";
-	Process.run(({"ffmpeg", "-y", "-f", "image2pipe", "-i", "-", filename + ".gif"}),
-		(["stdin": animation * ""]));
+	if (!preview_thread || preview_thread->status())
+		//If there's no preview being created, create one. But give it a
+		//coherent copy by subtracting out the zeroes before spawning -
+		//we create a new array synchronously in the main thread.
+		preview_thread = Thread.Thread(make_preview, animation - ({0}));
 }
 
 int main(int argc, array(string) argv)
