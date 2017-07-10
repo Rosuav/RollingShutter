@@ -205,12 +205,6 @@ int main(int argc, array(string) argv)
 			"stderr": Stdio.File("/dev/null")->pipe(),*/
 			"stdin": ffmpeg->pipe(Stdio.PROP_IPC|Stdio.PROP_REVERSE)])
 		);
-		//animation = allocate(height);
-		//Since the intermediate 'progressive' array won't be needed after this, we
-		//reuse it for the output frames. This effectively means that we discard the
-		//intermediate data as soon as we're done preparing that frame, and reduces
-		//memory usage notably: 2213416 with reuse, 2855796 w/o.
-		animation = progressive;
 		string past = ""; //Lines "in the past". Gets the current row added _after_ rendering.
 		array frame;
 		for (int frm = 0; frm < height; ++frm)
