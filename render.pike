@@ -188,6 +188,7 @@ int main(int argc, array(string) argv)
 		progressive = allocate(height);
 	}
 	foreach (animation; int pos;) render_frame(pos);
+	if (preview_thread && !preview_thread->status()) preview_thread->wait();
 	if (progressive)
 	{
 		//Render each frame as:
