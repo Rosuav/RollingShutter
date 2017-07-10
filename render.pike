@@ -71,10 +71,11 @@ Thread.Thread preview_thread;
 void make_preview(array(string) animation)
 {
 	Stdio.File ffmpeg = Stdio.File();
+	Stdio.File stdout = Stdio.File("/dev/null", "wct"); //Have to retain these, otherwise
+	Stdio.File stderr = Stdio.File("/dev/null", "wct"); //ffmpeg gets a SIGPIPE on writing.
 	Process.Process proc = Process.Process(
 		({"ffmpeg", "-y", "-f", "image2pipe", "-i", "-", filename + ".gif"}),
-		(["stdout": Stdio.File("/dev/null")->pipe(),
-		"stderr": Stdio.File("/dev/null")->pipe(),
+		(["stdout": stdout->pipe(), "stderr": stderr->pipe(),
 		"stdin": ffmpeg->pipe(Stdio.PROP_IPC|Stdio.PROP_REVERSE)])
 	);
 	ffmpeg->write(animation[*]);
