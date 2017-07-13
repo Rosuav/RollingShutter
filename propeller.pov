@@ -10,6 +10,7 @@ global_settings {
 }
 
 camera {
+	right x*image_width/image_height
 	location <0.0, 0.0, -10.0>
 	look_at 0
 }
